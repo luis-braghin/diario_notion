@@ -34,5 +34,6 @@ app.listen(PORT, () => {
   console.log(`Servidor rodando em http://localhost:${PORT}`);
   console.log('Endpoints disponíveis:');
   console.log('  GET  /health - Health check');
-  console.log('  POST /api/process-audio - Processar áudio do diário');
+  console.log('  POST /api/process-audio - Processar áudio (transcrição + Claude)');
+  console.log('  POST /api/entries - Salvar entrada no Notion (após confirmação)');
 });

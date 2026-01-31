@@ -174,31 +174,17 @@ router.post('/process-audio', upload.single('audio'), async (req, res) => {
 
     console.log(`[Audio API] Processamento OK: ${textoProcessado.length} caracteres`);
 
-    // ========== ETAPA 3: SALVAR NO NOTION ==========
-
-    console.log('[Audio API] Etapa 3/3: Salvando no Notion...');
-
-    try {
-      await addDiaryEntry(dataAtual, textoProcessado);
-    } catch (error) {
-      console.error('[Audio API] Erro ao salvar no Notion:', error.message);
-      return res.status(500).json({
-        success: false,
-        error: `Erro ao salvar no Notion: ${error.message}`
-      });
-    }
-
-    console.log('[Audio API] Salvo no Notion com sucesso');
-
-    // ========== SUCESSO ==========
+    // ========== SUCESSO (SEM SALVAR NO NOTION) ==========
+    // O salvamento no Notion é feito separadamente via POST /api/entries
+    // após o usuário confirmar na tela de preview
 
     // Formata a data para resposta
     const dataFormatada = formatarData(dataAtual);
 
     console.log('[Audio API] ----------------------------------------');
-    console.log('[Audio API] Sucesso! Entrada criada.');
+    console.log('[Audio API] Sucesso! Texto processado (aguardando confirmação para salvar).');
 
-    // Retorna resposta de sucesso
+    // Retorna resposta de sucesso COM os dados para preview
     return res.json({
       success: true,
       text: textoProcessado,
@@ -217,6 +203,78 @@ router.post('/process-audio', upload.single('audio'), async (req, res) => {
   } finally {
     // SEMPRE limpa o arquivo temporário (sucesso ou erro)
     limparArquivoTemp(audioPath);
+  }
+});
+
+/**
+ * POST /api/entries
+ *
+ * Salva uma entrada de diário no Notion
+ * Chamado APÓS o usuário confirmar na tela de preview
+ *
+ * @body {JSON}
+ *   - text: texto processado a ser salvo (obrigatório)
+ *   - date: data da entrada (opcional, default: agora)
+ *
+ * @returns {Object}
+ *   - success: boolean
+ *   - message: mensagem de confirmação
+ *   - date: data formatada
+ */
+router.post('/entries', express.json(), async (req, res) => {
+  try {
+    const { text, date } = req.body;
+
+    // Validação: texto obrigatório
+    if (!text || typeof text !== 'string' || text.trim().length === 0) {
+      console.log('[Entries API] Erro: Texto não fornecido');
+      return res.status(400).json({
+        success: false,
+        error: 'Texto obrigatório para salvar a entrada.'
+      });
+    }
+
+    console.log('[Entries API] ----------------------------------------');
+    console.log(`[Entries API] Salvando entrada (${text.length} caracteres)...`);
+
+    // Usa a data fornecida ou a data atual
+    const dataEntrada = date ? new Date(date) : new Date();
+
+    // Valida se a data é válida
+    if (isNaN(dataEntrada.getTime())) {
+      return res.status(400).json({
+        success: false,
+        error: 'Data inválida fornecida.'
+      });
+    }
+
+    // Salva no Notion
+    try {
+      await addDiaryEntry(dataEntrada, text.trim());
+    } catch (error) {
+      console.error('[Entries API] Erro ao salvar no Notion:', error.message);
+      return res.status(500).json({
+        success: false,
+        error: `Erro ao salvar no Notion: ${error.message}`
+      });
+    }
+
+    const dataFormatada = formatarData(dataEntrada);
+    console.log(`[Entries API] Salvo com sucesso: ${dataFormatada}`);
+    console.log('[Entries API] ----------------------------------------');
+
+    return res.json({
+      success: true,
+      message: 'Entrada salva no Notion com sucesso!',
+      date: dataFormatada
+    });
+
+  } catch (error) {
+    console.error('[Entries API] Erro inesperado:', error.message);
+    return res.status(500).json({
+      success: false,
+      error: `Erro interno: ${error.message}`
+    });
   }
 });
 
