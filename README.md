@@ -62,7 +62,7 @@ npm test       # Integration tests
 3. `POST /api/entries` — send text + target → saved to Notion
 
 **POST /api/process-audio** (`multipart/form-data`):
-- `audio` — file (mp3, wav, m4a, webm, ogg, mp4, flac; max 25MB)
+- `audio` — file (mp3, wav, m4a, webm, ogg, mp4, flac, mpeg, mpga; max 25MB)
 - `style` — `fiel` | `objetivo` | `categorizado`
 
 **POST /api/entries** (JSON):
