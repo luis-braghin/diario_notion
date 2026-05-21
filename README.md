@@ -29,12 +29,14 @@ cp .env.example .env
 OPENAI_API_KEY=sk-...
 ANTHROPIC_API_KEY=sk-ant-...
 NOTION_TOKEN=secret_...
-NOTION_PAGE_ID=<main page id>        # required
-NOTION_PAGE_ID_2=<secondary page id> # optional
+NOTION_PAGE_ID=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx  # required
+NOTION_PAGE_ID_2=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx # optional
 PORT=3000
 NODE_ENV=development
 CORS_ORIGIN=*
 ```
+
+> **Notion page ID**: extract from the page URL — `notion.so/My-Page-<pageId>` — and create an integration at [notion.so/my-integrations](https://www.notion.so/my-integrations) with access to the target pages.
 
 ## Running
 
